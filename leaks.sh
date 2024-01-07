@@ -1,78 +1,56 @@
-#!/bin/bash
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'  # No Color
 
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <domain>"
+    exit 1
+fi
 
-read -p "Enter the target URL: " target_url
 
+domain=$1
 
 data_leakage_paths=(
-    "/.git" "/.env" "/.htaccess" "/.htpasswd" "/.DS_Store" "/.svn" "/.well-known"
-    "/robots.txt" "/sitemap.xml" "/backup" "/log" "/tmp" "/config" "/db"
-    "/sql" "/install" "/setup" "/dump" "/config.php" "/wp-config.php"
-    "/.backup" "/.mysql_history" "/.bash_history" "/.ssh" "/phpinfo.php"
-    "/info.php" "/readme.html" "/README.md" "/LICENSE" "/admin" "/.gitignore"
-    "/cgi-bin" "/server-status" "/server-info" "/test" "/tests" "/vendor"
-    "/node_modules" "/.npm" "/.dockerenv" "/docker-compose.yml" "/.travis.yml"
-    "/api" "/.gitlab-ci.yml" "/debug" "/cache" "/.httr-oauth" "/.user.ini"
-    "/secret" "/.idea" "/.vscode" "/.history" "/.babelrc" "/.eslintrc"
-    "/.prettierrc" "/yarn.lock" "/package-lock.json" "/package.json"
-    "/gulpfile.js" "/webpack.config.js" "/error_log" "/access_log" "/.mailrc"
-    "/.forward" "/.fetchmailrc" "/.rnd" "/.gemrc" "/.irb_history"
-    "/.python_history" "/.php_history" "/.perl_history" "/.ksh_history"
-    "/.bash_logout" "/.logout" "/.bashrc" "/.profile" "/.cshrc" "/.tcshrc"
-    "/.zshrc" "/.viminfo" "/.vimrc" "/.exrc" "/.netrc" "/.tigrc" "/.inputrc"
-    "/.cvsrc" "/.pypirc" "/.hgrc" "/.bash_aliases" "/.aliases" "/.rhosts"
-    "/.shosts" "/.ssh/authorized_keys" "/.ssh/config" "/.ssh/id_dsa"
-    "/.ssh/id_ecdsa" "/.ssh/id_ed25519" "/.ssh/id_rsa" "/.ssh/known_hosts"
+    "/.git" "/.env" "/.htaccess" "/.htpasswd" "/.DS_Store" "/.svn" "/.gitignore"
+    "/robots.txt" "/sitemap.xml" "/backup" "/dump" "/config" "/config.php"
+    "/wp-config.php" "/.backup" "/.mysql_history" "/.bash_history" "/.ssh"
+    "/phpinfo.php" "/info.php" "/readme.html" "/README.md" "/LICENSE"
+    "/admin" "/cgi-bin" "/server-status" "/server-info" "/.dockerenv"
+    "/docker-compose.yml" "/api" "/.gitlab-ci.yml" "/debug" "/cache"
+    "/.user.ini" "/secret" "/.idea" "/.vscode" "/error_log" "/access_log"
+    "/.mailrc" "/.forward" "/.rnd" "/.gemrc" "/.bashrc" "/.profile"
+    "/.viminfo" "/.vimrc" "/.netrc" "/.ssh/authorized_keys" "/.ssh/id_rsa"
+    
 )
 
-
-visited_urls=()
-
-function crawl_and_check {
-    local url="$1"
-
-    
-    if [[ "${visited_urls[@]}" =~ "${url}" ]]; then
-        return
-    fi
-
-    
-    visited_urls+=("$url")
-
-    
+function check_path {
+    local url=$1
     response=$(curl -s -o /dev/null -w "%{http_code}" "$url")
 
-   
     if [ "$response" -eq 200 ]; then
-     
         echo -e "${RED}Warning: Potential data leakage at $url${NC}"
-
-      
-        links=$(curl -s "$url" | grep -o '<a [^>]*href="[^"]*"' | grep -o 'href="[^"]*"' | cut -d'"' -f2)
-
-       
-        for link in $links; do
-           
-            if [[ "$link" == /* ]]; then
-              
-                full_url="${target_url}${link}"
-          
-                crawl_and_check "$full_url"
-            fi
-        done
     else
-       
         echo -e "${GREEN}Normal: No data leakage at $url (status code: $response)${NC}"
     fi
 }
 
+function try_both_protocols {
+    local path=$1
+    local https_url="https://$domain$path"
+    local http_url="http://$domain$path"
+
+    
+    response=$(curl -s -o /dev/null -w "%{http_code}" "$https_url")
+    if [ "$response" -eq 200 ]; then
+        check_path "$https_url"
+    else
+       
+        check_path "$http_url"
+    fi
+}
 
 for path in "${data_leakage_paths[@]}"; do
-    full_url="${target_url}${path}"
-    
-    crawl_and_check "$full_url"
+    try_both_protocols "$path"
 done
+

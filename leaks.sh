@@ -10,7 +10,23 @@ read -p "Enter the target URL: " target_url
 
 data_leakage_paths=(
     "/.git" "/.env" "/.htaccess" "/.htpasswd" "/.DS_Store" "/.svn" "/.well-known"
-    "/robots.txt" "/sitemap.xml" "/backup" "/log" "/tmp"
+    "/robots.txt" "/sitemap.xml" "/backup" "/log" "/tmp" "/config" "/db"
+    "/sql" "/install" "/setup" "/dump" "/config.php" "/wp-config.php"
+    "/.backup" "/.mysql_history" "/.bash_history" "/.ssh" "/phpinfo.php"
+    "/info.php" "/readme.html" "/README.md" "/LICENSE" "/admin" "/.gitignore"
+    "/cgi-bin" "/server-status" "/server-info" "/test" "/tests" "/vendor"
+    "/node_modules" "/.npm" "/.dockerenv" "/docker-compose.yml" "/.travis.yml"
+    "/api" "/.gitlab-ci.yml" "/debug" "/cache" "/.httr-oauth" "/.user.ini"
+    "/secret" "/.idea" "/.vscode" "/.history" "/.babelrc" "/.eslintrc"
+    "/.prettierrc" "/yarn.lock" "/package-lock.json" "/package.json"
+    "/gulpfile.js" "/webpack.config.js" "/error_log" "/access_log" "/.mailrc"
+    "/.forward" "/.fetchmailrc" "/.rnd" "/.gemrc" "/.irb_history"
+    "/.python_history" "/.php_history" "/.perl_history" "/.ksh_history"
+    "/.bash_logout" "/.logout" "/.bashrc" "/.profile" "/.cshrc" "/.tcshrc"
+    "/.zshrc" "/.viminfo" "/.vimrc" "/.exrc" "/.netrc" "/.tigrc" "/.inputrc"
+    "/.cvsrc" "/.pypirc" "/.hgrc" "/.bash_aliases" "/.aliases" "/.rhosts"
+    "/.shosts" "/.ssh/authorized_keys" "/.ssh/config" "/.ssh/id_dsa"
+    "/.ssh/id_ecdsa" "/.ssh/id_ed25519" "/.ssh/id_rsa" "/.ssh/known_hosts"
 )
 
 
